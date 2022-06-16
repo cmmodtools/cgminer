@@ -11,7 +11,7 @@ modified binaries. See COPYING for details.
 
 GIT TREE:
 
-https://github.com/kanoi/cgminer
+https://github.com/cmmodtools/cgminer.git
 
 SEE ALSO API-README, ASIC-README and FGPA-README FOR MORE INFORMATION ON EACH.
 
@@ -150,12 +150,16 @@ Basic *nix build instructions:
 	To actually build:
 
 	./autogen.sh	# only needed if building from git repo
-	CFLAGS="-O2 -Wall -march=native -fcommon" ./configure <options>
+	CFLAGS="-O2 -Wall -march=ivybridge -fcommon" ./configure <options>
 	make
 
 	No installation is necessary. You may run cgminer from the build
 	directory directly, but you may do make install if you wish to install
 	cgminer to a system location or location you specified.
+
+Building on macOS:
+
+see mac-build.txt
 
 Building on Windows10:
 
@@ -1126,7 +1130,7 @@ the command line or via the menu after startup and choose settings->write
 config file and the file will be loaded one each startup.
 
 Q: The build fails with gcc is unable to build a binary.
-A: Remove the "-march=native" component of your CFLAGS as your version of gcc
+A: Remove the "-march=ivybridge" component of your CFLAGS as your version of gcc
 does not support it. Also -O2 is capital o 2, not zero 2.
 
 Q: Work keeps going to my backup pool even though my primary pool hasn't
