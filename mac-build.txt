@@ -1,25 +1,76 @@
-Building cgminer on MacOS using Brew - tested on Big Sur 11.16
---------------------------------------------------------------
+# Building cgminer on macOS - tested on macOS 11 Big Sur
+# ------------------------------------------------------
 
-Install Brew
-this should take about 5-10 minutes on a recent mac with MBit internet
+# Build Requirements
+#   Xcode, GNU autoconf, GNU automake, GNU libtool, pkg-config, libcurl, libjansson, libusb
 
- /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
- brew analytics off
+# Install Xcode
+xcode-select --install
 
+# Install GNU autoconf
+curl -s https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.xz | tar x
+cd autoconf-2.71
+./configure
+make
+sudo make install
+cd ..
 
-Build cgminer:
+# Install GNU automake
+curl -s https://ftp.gnu.org/gnu/automake/automake-1.16.5.tar.xz | tar x
+cd automake-1.16.5
+./configure
+make
+sudo make install
+cd ..
 
- brew tap kanoi/cgminer
- brew install cgminer
+# Install GNU libtool
+curl -s https://ftp.gnu.org/gnu/libtool/libtool-2.4.7.tar.xz | tar x
+cd libtool-2.4.7
+./configure --disable-static --disable-shared
+make
+sudo make install
+cd ..
 
+# Install pkg-config
+curl -s https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz | tar x
+cd pkg-config-0.29.2
+./configure --with-internal-glib
+make
+sudo make install
+cd ..
 
-If you already had brew installed, you should instead do the following steps:
+# Install libcurl
+curl -s https://curl.se/download/curl-7.83.1.tar.xz | tar x
+cd curl-7.83.1
+CFLAGS="-mmacosx-version-min=11.0 -arch x86_64 -arch arm64" ./configure --disable-static --enable-optimize --disable-ldap --disable-ldaps --disable-rtsp --disable-unix-sockets --disable-dict --disable-file --disable-gopher --disable-imap --disable-mqtt  --disable-pop3 --disable-smtp --disable-telnet --disable-tftp --disable-ftp --disable-smb --disable-alt-svc --disable-ntlm  --disable-ntlm-wb --disable-manual --disable-doh --disable-socketpair --disable-mime --disable-cookies --enable-http-auth --disable-hsts --with-secure-transport
+make -j2
+sudo make install
+cd ..
 
- brew analytics off
- brew doctor
- brew update
- brew upgrade
- brew cleanup
- brew tap kanoi/cgminer
- brew install cgminer
+# Install libjansson
+curl -sL https://github.com/akheron/jansson/releases/download/v2.14/jansson-2.14.tar.bz2 | tar x
+cd jansson-2.14
+CFLAGS="-O2 -mmacosx-version-min=11.0 -arch x86_64 -arch arm64" ./configure --disable-static
+make
+sudo make install
+cd ..
+
+# Install libusb
+curl -sL https://github.com/libusb/libusb/releases/download/v1.0.26/libusb-1.0.26.tar.bz2 | tar x
+cd libusb-1.0.26
+CFLAGS="-O2 -mmacosx-version-min=11.0 -arch x86_64 -arch arm64" ./configure --disable-static
+make
+sudo make install
+cd ..
+
+# Build cgminer
+git clone https://github.com/cmmodtools/cgminer.git
+cd cgminer
+./autogen.sh
+CFLAGS="-O2 -Wall -fcommon -mmacosx-version-min=11.0 -arch x86_64 -arch arm64" ./configure --enable-gekko
+make
+sudo make install
+cd ..
+
+# Package cgminer
+sudo tar caPf cgminer_macos.txz /usr/local/bin/cgminer /usr/local/lib/libusb-1.0.* /usr/local/lib/libjansson.* /usr/local/lib/libcurl.*
