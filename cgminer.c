@@ -3659,7 +3659,7 @@ static void curses_print_status(void)
 			pool->sockaddr_url, pool->diff, pool->rpc_user);
 	} else {
 		cg_mvwprintw(statuswin, 4, 0, " Connected to %s diff %s with%s %s as user %s",
-			pool->sockaddr_url, pool->diff, have_longpoll ? "": "out",
+			pool->rpc_url, pool->diff, have_longpoll ? "": "out",
 			pool->has_gbt ? "GBT" : "LP", pool->rpc_user);
 	}
 	wclrtoeol(statuswin);
