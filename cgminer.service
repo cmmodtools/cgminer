@@ -1,0 +1,13 @@
+[Unit]
+Description=cgminer
+Wants=bitcoind.service
+After=bitcoind.service syslog.target network.target
+
+[Service]
+Type=forking
+Restart=always
+User=cgminer
+ExecStart=/usr/bin/screen -ln -dmS cgminer /usr/local/bin/cgminer -c /etc/bitcoin/cgminer.conf
+
+[Install]
+WantedBy=multi-user.target
