@@ -1,3 +1,8 @@
+Version 4.12.1 - 6th December 2022
+
+- README add an index
+- Add Beta Gekko linux support for multi-chip BM1397 (GSF - R909)
+
 Version 4.12.0 - 16th September 2021
 
 - Handle gcc 7+ issues/warnings in main and gekko code

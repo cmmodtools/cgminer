@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 Andrew Smith
+ * Copyright 2011-2022 Andrew Smith
  * Copyright 2011-2018 Con Kolivas
  * Copyright 2011-2012 Luke Dashjr
  * Copyright 2010 Jeff Garzik
@@ -231,6 +231,7 @@ bool use_curses = true;
 #else
 bool use_curses;
 #endif
+bool opt_mac_yield;
 bool opt_widescreen;
 static bool alt_status;
 static bool switch_status;
@@ -312,21 +313,29 @@ bool opt_gekko_gse_detect = 0;
 bool opt_gekko_gsh_detect = 0;
 bool opt_gekko_gsi_detect = 0;
 bool opt_gekko_gsf_detect = 0;
+bool opt_gekko_r909_detect = 0;
 float opt_gekko_gsc_freq = 150;
 float opt_gekko_gsd_freq = 100;
 float opt_gekko_gse_freq = 150;
 float opt_gekko_tune_up = 97;
 float opt_gekko_tune_down = 95;
+#if defined(__APPLE__)
+float opt_gekko_wait_factor = 0.3;
+#elif defined (WIN32)
+float opt_gekko_wait_factor = 0.4;
+#else
 float opt_gekko_wait_factor = 0.5;
+#endif
 float opt_gekko_step_freq = 6.25;
 int opt_gekko_gsh_freq = 100;
 int opt_gekko_gsi_freq = 550;
 int opt_gekko_gsf_freq = 200;
+int opt_gekko_r909_freq = 450;
 int opt_gekko_bauddiv = 0;
 int opt_gekko_gsh_vcore = 400;
 int opt_gekko_start_freq = 100;
 int opt_gekko_step_delay = 15;
-bool opt_gekko_mine2 = false;
+bool opt_gekko_mine2 = false; // gekko code ignores it
 int opt_gekko_tune2 = 0;
 #endif
 #ifdef USE_HASHRATIO
@@ -1944,12 +1953,15 @@ static struct opt_table opt_config_table[] = {
 	OPT_WITHOUT_ARG("--gekko-compacf-detect",
 			 opt_set_bool, &opt_gekko_gsf_detect,
 			 "Detect GekkoScience CompacF BM1397"),
+	OPT_WITHOUT_ARG("--gekko-r909-detect",
+			 opt_set_bool, &opt_gekko_r909_detect,
+			 "Detect GekkoScience Terminus R909 BM1397"),
 	OPT_WITHOUT_ARG("--gekko-noboost",
 			 opt_set_bool, &opt_gekko_noboost,
 			 "Disable GekkoScience NewPac/R606/CompacF AsicBoost"),
 	OPT_WITHOUT_ARG("--gekko-lowboost",
 			 opt_set_bool, &opt_gekko_lowboost,
-			 "GekkoScience NewPac/R606/CompacF AsicBoost - 2 midstate"),
+			 "GekkoScience NewPac/R606 AsicBoost - 2 midstate"),
 	OPT_WITH_ARG("--gekko-terminus-freq",
 		     set_float_0_to_500, opt_show_floatval, &opt_gekko_gse_freq,
 		     "Set GekkoScience Terminus BM1384 frequency in MHz, range 6.25-500"),
@@ -1967,7 +1979,7 @@ static struct opt_table opt_config_table[] = {
 		     "Set GekkoScience miner ramping hash threshold, range 0-99"),
 	OPT_WITH_ARG("--gekko-wait-factor",
 		     set_float_0_to_500, opt_show_floatval, &opt_gekko_wait_factor,
-		     "Set GekkoScience miner task send wait factor, range 0.01-1.00"),
+		     "Set GekkoScience miner task send wait factor, range 0.01-2.00"),
 	OPT_WITH_ARG("--gekko-bauddiv",
 		     set_int_0_to_9999, opt_show_intval, &opt_gekko_bauddiv,
 		     "Set GekkoScience BM1387 baud divider {0: auto, 1: 1.5M, 7: 375K, 13: 214K, 25: 115K}"),
@@ -1980,6 +1992,9 @@ static struct opt_table opt_config_table[] = {
 	OPT_WITH_ARG("--gekko-compacf-freq",
 		     set_int_0_to_9999, opt_show_intval, &opt_gekko_gsf_freq,
 		     "Set GekkoScience CompacF BM1397 frequency in MHz, range 100-800"),
+	OPT_WITH_ARG("--gekko-r909-freq",
+		     set_int_0_to_9999, opt_show_intval, &opt_gekko_r909_freq,
+		     "Set GekkoScience Terminus R909 BM1397 frequency in MHz, range 100-800"),
 	OPT_WITH_ARG("--gekko-start-freq",
 		     set_int_0_to_9999, opt_show_intval, &opt_gekko_start_freq,
                      "Ramp start frequency MHz 25-500"),
@@ -1990,7 +2005,7 @@ static struct opt_table opt_config_table[] = {
 		     set_int_0_to_9999, opt_show_intval, &opt_gekko_step_delay,
 		     "Ramp step interval range 1-600"),
 	OPT_WITHOUT_ARG("--gekko-mine2",
-			opt_set_bool, &opt_gekko_mine2, "Use mine2"),
+			opt_set_bool, &opt_gekko_mine2, opt_hidden), // ignored
 	OPT_WITH_ARG("--gekko-tune2",
 			set_int_0_to_9999, opt_show_intval, &opt_gekko_tune2,
 			"Tune up mine2 mins 30-9999, default 0=never"),
@@ -2214,6 +2229,9 @@ static struct opt_table opt_config_table[] = {
 	OPT_WITHOUT_ARG("--lowmem",
 			opt_set_bool, &opt_lowmem,
 			"Minimise caching of shares for low memory applications"),
+	OPT_WITHOUT_ARG("--mac-yield",
+			opt_set_bool, &opt_mac_yield,
+			"Allow yield on old macs (default dont)"),
 #ifdef USE_MINION
 	OPT_WITH_ARG("--minion-chipreport",
 		     set_int_0_to_100, opt_show_intval, &opt_minion_chipreport,
@@ -7890,6 +7908,16 @@ void get_work_by_nonce2(struct thr_info *thr,
 }
 #endif
 
+#if STRATUM_WORK_TIMING
+cglock_t swt_lock;
+uint64_t stratum_work_count;
+uint64_t stratum_work_time;
+uint64_t stratum_work_min;
+uint64_t stratum_work_max;
+uint64_t stratum_work_time0;
+uint64_t stratum_work_time10;
+uint64_t stratum_work_time100;
+#endif
 
 /* Generates stratum based work based on the most recent notify information
  * from the pool. This will keep generating work while a pool is down so we use
@@ -7898,8 +7926,16 @@ static void gen_stratum_work(struct pool *pool, struct work *work)
 {
 	unsigned char merkle_root[32], merkle_sha[64];
 	uint32_t *data32, *swap32;
+#if STRATUM_WORK_TIMING
+	struct timeval stt;
+	double usec;
+#endif
 	uint64_t nonce2le;
 	int i;
+
+#if STRATUM_WORK_TIMING
+	cgtime(&stt);
+#endif
 
 	cg_wlock(&pool->data_lock);
 
@@ -7967,6 +8003,29 @@ static void gen_stratum_work(struct pool *pool, struct work *work)
 	calc_diff(work, work->sdiff);
 
 	cgtime(&work->tv_staged);
+
+#if STRATUM_WORK_TIMING
+	usec = us_tdiff(&work->tv_staged, &stt);
+	cg_wlock(&swt_lock);
+	stratum_work_count++;
+	stratum_work_time += usec;
+	if (stratum_work_min == 0 || stratum_work_min > usec)
+		stratum_work_min = usec;
+	if (stratum_work_max < usec)
+		stratum_work_max = usec;
+	if (usec == 0)
+		stratum_work_time0++;
+	else
+	{
+		if (usec >= 10)
+		{
+			stratum_work_time10++;
+			if (usec >= 100)
+				stratum_work_time100++;
+		}
+	}
+	cg_wunlock(&swt_lock);
+#endif
 }
 
 #ifdef HAVE_LIBCURL
@@ -10488,6 +10547,9 @@ int main(int argc, char *argv[])
 	rwlock_init(&netacc_lock);
 	rwlock_init(&mining_thr_lock);
 	rwlock_init(&devices_lock);
+#if STRATUM_WORK_TIMING
+	cglock_init(&swt_lock);
+#endif
 
 	mutex_init(&lp_lock);
 	if (unlikely(pthread_cond_init(&lp_cond, NULL)))

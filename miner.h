@@ -350,7 +350,7 @@ struct device_drv {
 	struct api_data *(*get_api_debug)(struct cgpu_info *);
 	bool (*get_stats)(struct cgpu_info *);
 	void (*identify_device)(struct cgpu_info *); // e.g. to flash a led
-	char *(*set_device)(struct cgpu_info *, char *option, char *setting, char *replybuf);
+	char *(*set_device)(struct cgpu_info *, char *option, char *setting, char *replybuf, size_t siz);
 
 	// Thread-specific functions
 	bool (*thread_prepare)(struct thr_info *);
@@ -1014,6 +1014,7 @@ struct pool;
 #define API_MCAST_CODE "FTW"
 #define API_MCAST_ADDR "224.0.0.75"
 
+extern bool opt_mac_yield;
 extern bool opt_widescreen;
 extern bool opt_work_update;
 extern bool opt_protocol;
@@ -1064,6 +1065,7 @@ extern bool opt_gekko_gse_detect;
 extern bool opt_gekko_gsh_detect;
 extern bool opt_gekko_gsi_detect;
 extern bool opt_gekko_gsf_detect;
+extern bool opt_gekko_r909_detect;
 extern float opt_gekko_gsc_freq;
 extern float opt_gekko_gsd_freq;
 extern float opt_gekko_gse_freq;
@@ -1075,10 +1077,10 @@ extern int opt_gekko_bauddiv;
 extern int opt_gekko_gsh_freq;
 extern int opt_gekko_gsi_freq;
 extern int opt_gekko_gsf_freq;
+extern int opt_gekko_r909_freq;
 extern int opt_gekko_gsh_vcore;
 extern int opt_gekko_start_freq;
 extern int opt_gekko_step_delay;
-extern bool opt_gekko_mine2;
 extern int opt_gekko_tune2;
 #endif
 #ifdef USE_KLONDIKE
@@ -1542,6 +1544,20 @@ struct work {
     int version;
 #endif
 };
+
+// enable grossly global stratum work stats
+#define STRATUM_WORK_TIMING 1
+
+#if STRATUM_WORK_TIMING
+extern cglock_t swt_lock;
+extern uint64_t stratum_work_count;
+extern uint64_t stratum_work_time;
+extern uint64_t stratum_work_min;
+extern uint64_t stratum_work_max;
+extern uint64_t stratum_work_time0;
+extern uint64_t stratum_work_time10;
+extern uint64_t stratum_work_time100;
+#endif
 
 #ifdef USE_MODMINER
 struct modminer_fpga_state {

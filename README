@@ -13,6 +13,29 @@ modifications you make to this code MUST be provided by law if you distribute
 modified binaries. See COPYING for details.
 
 
+Search below for the following headings for details about mining
+
+EXECUTIVE SUMMARY ON USAGE
+BUILDING CGMINER FOR YOURSELF
+ If building from git
+ If building on Ubuntu
+ Basic *nix build instructions
+ Building on Windows10
+ Building on MacOS
+Usage instructions
+SETTING UP USB DEVICES
+ WINDOWS
+ LINUX
+ OSX
+ Advanced USB options
+SCREEN DISPLAY WHILE RUNNING
+MULTIPLE POOL CONNECTIONS
+ QUOTAS
+SOLO MINING
+LOGGING
+FAQ
+
+
 GIT TREE:
 
 https://github.com/cmmodtools/cgminer.git
@@ -78,8 +101,8 @@ Any configuration file may also contain a single
 to recursively include another configuration file.
 Writing the configuration will save all settings from all files in the output.
 
-
 ---
+
 BUILDING CGMINER FOR YOURSELF
 
 DEPENDENCIES:
@@ -168,13 +191,15 @@ Basic *nix build instructions:
 	directory directly, but you may do make install if you wish to install
 	cgminer to a system location or location you specified.
 
-Building on macOS:
-
-see mac-build.txt
 
 Building on Windows10:
 
 see windows-build.txt
+
+
+Building on MacOS
+
+see mac-build.txt
 
 ---
 
@@ -355,10 +380,12 @@ Options for both config file and command line:
 --gekko-compac-freq <arg> Set GekkoScience Compac BM1384 frequency in MHz, range 6.25-500 (default 150.0)
 --gekko-compacf-detect Detect GekkoScience CompacF BM1397
 --gekko-compacf-freq <arg> Set GekkoScience CompacF BM1397 frequency in MHz, range 100-800 (default 200.0)
---gekko-lowboost    GekkoScience NewPac/R606/CompacF AsicBoost - 2 midstate
+--gekko-r909-detect Detect GekkoScience Terminus R909 BM1397
+--gekko-r909-freq <arg> Set GekkoScience Terminus R909 BM1397 frequency in MHz, range 100-800 (default 450.0)
+--gekko-lowboost    GekkoScience NewPac/R606 AsicBoost - 2 midstate
 --gekko-newpac-detect Detect GekkoScience NewPac BM1387
 --gekko-newpac-freq Set GekkoScience NewPac BM1387 frequency in MHz, range 50-900
---gekko-noboost     Disable GekkoScience NewPac/R606/CompacF AsicBoost
+--gekko-noboost     Disable GekkoScience NewPac/R606/CompacF/R909 AsicBoost
 --gekko-r606-detect Detect GekkoScience Terminus BM1387
 --gekko-r606-freq   Set GekkoScience Terminus R606 frequency in MHz, range 50-900
 --gekko-serial      Detect GekkoScience Device by Serial Number
@@ -368,7 +395,7 @@ Options for both config file and command line:
 --gekko-terminus-freq <arg> Set GekkoScience Terminus BM1384 frequency in MHz, range 6.25-500 (default 150.0)
 --gekko-tune-down   Set GekkoScience miner minimum hash quality, range 0-100
 --gekko-tune-up     Set GekkoScience miner ramping hash threshold, rante 0-99
---gekko-wait-factor Set GekkoScience miner task send wait factor, range 0.01-1.00
+--gekko-wait-factor Set GekkoScience miner task send wait factor, range 0.01-2.00
 --hfa-hash-clock <arg> Set hashfast clock speed (default: 550)
 --hfa-fail-drop <arg> Set how many MHz to drop clockspeed each failure on an overlocked hashfast device (default: 10)
 --hfa-fan <arg>     Set fanspeed percentage for hashfast, single value or range (default: 10-85)
@@ -383,6 +410,7 @@ Options for both config file and command line:
 --load-balance      Change multipool strategy from failover to quota based balance
 --log|-l <arg>      Interval in seconds between log output (default: 5)
 --lowmem            Minimise caching of shares for low memory applications
+--mac-yield         Allow yield on old macs (default dont)
 --minion-chipreport <arg> Seconds to report chip 5min hashrate, range 0-100 (default: 0=disabled)
 --minion-freq <arg> Set minion chip frequencies in MHz, single value or comma list, range 100-1400 (default: 1200)
 --minion-freqchange Millisecond total time to do frequency changes (default: 1000)
@@ -673,6 +701,9 @@ modem and the driver needs to be unloaded for cgminer to work:
  sudo kextunload -b com.apple.driver.AppleUSBCDC
  sudo kextunload -b com.apple.driver.AppleUSBCDCACMData
 
+If you are running an old Mac and desktop performance is noticeably affected,
+adding the --mac-yield option may help, but also may slow down mining.
+
 There may be a limit to the number of USB devices that you are allowed to start.
 The following set of commands, followed by a reboot will increase that:
 
@@ -756,7 +787,7 @@ If one of the 10 devices stops working, hotplug - if enabled, as is default
 
 ---
 
-WHILE RUNNING:
+SCREEN DISPLAY WHILE RUNNING:
 
 The following options are available while running with a single keypress:
 
@@ -823,6 +854,7 @@ the pool. The 2 diff values are the actual difficulty target that share reached
 followed by the difficulty target the pool is currently asking for.
 
 ---
+
 Also many issues and FAQs are covered in the forum thread
 dedicated to this program,
 	http://forum.bitcoin.org/index.php?topic=28402.0
@@ -903,12 +935,12 @@ LOG WINDOW
 All running information is shown here, usually share submission results and
 block update notifications, along with device messages and warnings.
 
- [2014-03-29 00:24:09] Accepted 1397768d Diff 3.35K/2727 HFS 0 pool 0
- [2014-03-29 00:24:13] Stratum from pool 0 detected new block
-
+ [2021-09-27 11:59:04.397] Accepted 1397768d Diff 3.35K/727 GSF 0 pool 0
+ [2021-09-27 12:59:05.397] Stratum from pool 0 detected new block at height 702417
 
 ---
-MULTIPOOL
+
+MULTIPLE POOL CONNECTIONS
 
 FAILOVER STRATEGIES WITH MULTIPOOL:
 A number of different strategies for dealing with multipool setups are
@@ -950,6 +982,7 @@ and uses it to try to end up doing the same amount of work for all pools.
 
 
 ---
+
 QUOTAS
 
 The load-balance multipool strategy works off a quota based scheduler. The
