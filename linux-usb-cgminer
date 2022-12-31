@@ -13,54 +13,54 @@ for the blockchain.
 2) Once installed, add the nftables firewall and create /etc/nftables.conf
 
 	sudo apt install nftables
-	sudo sh -c 'echo "\
-	#\!/usr/sbin/nft -f\\n\
-	\\n\
-	flush ruleset\\n\
-	\\n\
-	include \"/etc/nftables.blacklist_ipv4\"\\n\
-	include \"/etc/nftables.blacklist_ipv6\"\\n\
-	\\n\
-	table inet filter {\\n\
-		set blacklist_ipv4 {\\n\
-			type ipv4_addr; flags interval; counter;\\n\
-			elements = $blacklist_ipv4\\n\
-		}\\n\
-		set blacklist_ipv6 {\\n\
-			type ipv6_addr; flags interval; counter;\\n\
-			elements = $blacklist_ipv6\\n\
-		}\\n\
-	\\n\
-		chain input {\\n\
-			type filter hook input priority 0; policy drop;\\n\
-			iif lo accept\\n\
-			ct state vmap { established : accept, related : accept, invalid : drop }\\n\
-	\\n\
-			ip saddr @blacklist_ipv4 drop\\n\
-			ip6 saddr @blacklist_ipv6 drop\\n\
-	\\n\
-			meta l4proto { icmp, ipv6-icmp } accept\\n\
-	\\n\
-			tcp dport { 8333, 18333 } accept\\n\
-	\\n\
-			tcp dport ssh accept\\n\
-		}\\n\
-		chain output {\\n\
-			type filter hook output priority 0; policy drop;\\n\
-			oif lo accept\\n\
-			ct state established,related accept\\n\
-	\\n\
-			ip daddr @blacklist_ipv4 drop\\n\
-			ip6 daddr @blacklist_ipv6 drop\\n\
-	\\n\
-			meta l4proto { icmp, ipv6-icmp } accept\\n\
-	\\n\
-			tcp dport { http, 8333, 18333 } accept\\n\
-	\\n\
-			meta l4proto { tcp, udp } th dport domain accept\\n\
-			tcp dport smtp accept\\n\
-		}\\n\
-	}\
+	sh -c 'echo "\
+	#!/usr/sbin/nft -f
+
+	flush ruleset
+
+	include \"/etc/nftables.blacklist_ipv4\"
+	include \"/etc/nftables.blacklist_ipv6\"
+
+	table inet filter {
+		set blacklist_ipv4 {
+			type ipv4_addr; flags interval; counter;
+			elements = $blacklist_ipv4
+		}
+		set blacklist_ipv6 {
+			type ipv6_addr; flags interval; counter;
+			elements = $blacklist_ipv6
+		}
+
+		chain input {
+			type filter hook input priority 0; policy drop;
+			iif lo accept
+			ct state vmap { established : accept, related : accept, invalid : drop }
+
+			ip saddr @blacklist_ipv4 drop
+			ip6 saddr @blacklist_ipv6 drop
+
+			meta l4proto { icmp, ipv6-icmp } accept
+
+			tcp dport { 8333, 18333 } accept
+
+			tcp dport ssh accept
+		}
+		chain output {
+			type filter hook output priority 0; policy drop;
+			oif lo accept
+			ct state established,related accept
+
+			ip daddr @blacklist_ipv4 drop
+			ip6 daddr @blacklist_ipv6 drop
+
+			meta l4proto { icmp, ipv6-icmp } accept
+
+			tcp dport { http, 8333, 18333 } accept
+
+			meta l4proto { tcp, udp } th dport domain accept
+			tcp dport smtp accept
+        	}
+	}
 	" > /etc/nftables.conf'
 	sudo chmod 700 /etc/nftables.conf
 
