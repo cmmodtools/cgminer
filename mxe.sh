@@ -2,7 +2,6 @@
 #
 # This is used by windows-build.txt for cross compiling cgminer to windows
 # It is designed specifically for Ubuntu under Windows Subsystem for Linux
-# If it needs updating, raise an issue on https://githib.com/kanoi/cgminer
 # You can of course type the commands yourself and modify them as needed
 #
 # Change this if you choose to install/build mxe somewhere else

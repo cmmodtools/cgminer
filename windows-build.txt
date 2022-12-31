@@ -46,14 +46,13 @@ How to cross compile cgminer using MXE on WSL or linux
 
 ** Download cgminer - but don't build it yet:
  cd
- git clone https://github.com/kanoi/cgminer.git
+ git clone https://github.com/cmmodtools/cgminer.git
  cd cgminer/
 
 ** There is a script in the cgminer directory called mxe.sh
 ** This script is used to type some of the long commands required.
 ** To see what mxe.sh does just type: cat mxe.sh
 ** It is designed specifically for Ubuntu
-** If it needs updating, raise an issue on https://github.com/kanoi/cgminer
 ** You can of course type the commands yourself and modify them as needed
 
 ** The next command will install all the extra linux software needed.
