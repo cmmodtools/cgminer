@@ -59,7 +59,7 @@ for the blockchain.
 
 			meta l4proto { tcp, udp } th dport domain accept
 			tcp dport smtp accept
-        	}
+		}
 	}
 	" > /etc/nftables.conf'
 	sudo chmod 700 /etc/nftables.conf
@@ -144,6 +144,6 @@ for the blockchain.
 
 15) Start cgminer and view its output
 
-	sudo systemctl enable --now bitcoind
+	sudo systemctl enable --now cgminer
 	sudo -u cgminer screen -r cgminer
 
