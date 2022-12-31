@@ -13,7 +13,7 @@ for the blockchain.
 2) Once installed, add the nftables firewall and create /etc/nftables.conf
 
 	sudo apt install nftables
-	sh -c 'echo "\
+	sudo sh -c 'echo "\
 	#!/usr/sbin/nft -f
 
 	flush ruleset
@@ -23,12 +23,12 @@ for the blockchain.
 
 	table inet filter {
 		set blacklist_ipv4 {
-			type ipv4_addr; flags interval; counter;
-			elements = $blacklist_ipv4
+			type ipv4_addr; flags interval; counter; auto-merge;
+			elements = \$blacklist_ipv4
 		}
 		set blacklist_ipv6 {
-			type ipv6_addr; flags interval; counter;
-			elements = $blacklist_ipv6
+			type ipv6_addr; flags interval; counter; auto-merge;
+			elements = \$blacklist_ipv6
 		}
 
 		chain input {
@@ -60,13 +60,24 @@ for the blockchain.
 			meta l4proto { tcp, udp } th dport domain accept
 			tcp dport smtp accept
 		}
-	}
+	}\
 	" > /etc/nftables.conf'
 	sudo chmod 700 /etc/nftables.conf
 
 3) Create /etc/nftables.blacklist_ipv4 and /etc/nftables.blacklist_ipv6
    to prevent traffic to and from known malicious networks and jurisdictions
    that are under sanctions
+
+	sh -c '
+	blacklisted_countries="ru cn hk ir sa sc"
+
+	for ip in ipv4 ipv6; do
+		for country in $blacklisted_countries; do
+			curl -sS https://raw.githubusercontent.com/herrbischoff/country-ip-blocks/master/$ip/$country.cidr
+		done | sudo sh -c "(echo define blacklist_$ip = {; while read net; do echo \\\t\$net,; done; echo }) > /etc/nftables.blacklist_$ip"
+	done
+	'
+	sudo chmod 600 /etc/nftables.blacklist_ipv[4,6]
 
 4) Start the nftables firewall
 
@@ -112,7 +123,7 @@ for the blockchain.
 10) Copy example.conf to /etc/bitcoin
     ( https://raw.githubusercontent.com/cmmodtools/cgminer/master/example.conf )
 
-	sudo cp example.conf /etc/bitcoi/cgminer.conf
+	sudo cp example.conf /etc/bitcoin/cgminer.conf
 	sudo chgrp bitcoin /etc/bitcoin/cgminer.conf
 	sudo chmod 640 /etc/bitcoin/cgminer.conf
 
