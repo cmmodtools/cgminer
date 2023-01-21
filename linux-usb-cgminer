@@ -77,7 +77,7 @@ for the blockchain.
 		done | sudo sh -c "(echo define blacklist_$ip = {; while read net; do echo \\\t\$net,; done; echo }) > /etc/nftables.blacklist_$ip"
 	done
 	'
-	sudo chmod 600 /etc/nftables.blacklist_ipv[4,6]
+	sudo chmod 600 /etc/nftables.blacklist_ipv[46]
 
 4) Start the nftables firewall
 
