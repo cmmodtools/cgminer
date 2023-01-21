@@ -394,7 +394,7 @@ Options for both config file and command line:
 --gekko-terminus-detect Detect GekkoScience Terminus BM1384
 --gekko-terminus-freq <arg> Set GekkoScience Terminus BM1384 frequency in MHz, range 6.25-500 (default 150.0)
 --gekko-tune-down   Set GekkoScience miner minimum hash quality, range 0-100
---gekko-tune-up     Set GekkoScience miner ramping hash threshold, rante 0-99
+--gekko-tune-up     Set GekkoScience miner ramping hash threshold, range 0-99
 --gekko-wait-factor Set GekkoScience miner task send wait factor, range 0.01-2.00
 --hfa-hash-clock <arg> Set hashfast clock speed (default: 550)
 --hfa-fail-drop <arg> Set how many MHz to drop clockspeed each failure on an overlocked hashfast device (default: 10)
